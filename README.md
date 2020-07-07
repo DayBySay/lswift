@@ -1,5 +1,5 @@
 # lswift
-lswift is the ls command implemented by swift
+lswift is the ls command which reimplemented by swift
 
 ## install
 ```
