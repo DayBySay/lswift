@@ -1,6 +1,22 @@
 import Foundation
 import TSCUtility
 
+main()
+
+func main() {
+    let parser = ArgumentParser(usage: "<options>", overview: "lswift: ls command made with swift language.")
+    
+    let command = Executor(parser: parser)
+    let inputs = Array(CommandLine.arguments.dropFirst())
+    
+    do {
+        let args = try parser.parse(inputs)
+        command.execute(args: args)
+    } catch {
+        fatalError("Command-line pasing error: \(error)")
+    }
+}
+
 class Executor {
     private let shouldShowDodFiles: OptionArgument<Bool>
     
@@ -12,11 +28,7 @@ class Executor {
     }
     
     func execute(args: ArgumentParser.Result) {
-//        print(args)
         let fileManager = FileManager.default
-        let currentPath = fileManager.currentDirectoryPath
-//        print(fileManager.currentDirectoryPath)
-
         let shouldShowDotFiles = args.get(self.shouldShowDodFiles) ?? false
         
         do {
@@ -32,11 +44,11 @@ class Executor {
             
             let builder = OutputStringBuilder()
             valList.forEach { builder.set(val: $0) }
-
+            
             let output = builder.build()
             print(output)
         } catch {
-            print("Error while enumerating files \(currentPath): \(error.localizedDescription)")
+            print("Error: \(error.localizedDescription)")
         }
     }
     
@@ -91,6 +103,7 @@ struct OutputVal {
     let string: String
     let color: ASCIIColor
 }
+
 enum ASCIIColor: String {
     case none = ""
     case red = "\u{001B}[0;31m"
@@ -107,18 +120,3 @@ enum ASCIIColor: String {
     }
 }
 
-func main() {
-    let parser = ArgumentParser(usage: "<options>", overview: "lswift: ls command made with swift language.")
-    
-    let command = Executor(parser: parser)
-    let inputs = Array(CommandLine.arguments.dropFirst())
-    
-    do {
-        let args = try parser.parse(inputs)
-        command.execute(args: args)
-    } catch {
-        fatalError("Command-line pasing error: \(error)")
-    }
-}
-
-main()
