@@ -5,16 +5,21 @@ import PackageDescription
 
 let package = Package(
     name: "lswift",
+    platforms: [
+        .macOS(.v10_15)
+    ],
+    products: [
+        .executable(name: "lswift", targets: ["lswift"])
+    ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-tools-support-core.git", .branch("master")),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "lswift",
-            dependencies: []),
+            dependencies: [
+                .product(name: "SwiftToolsSupport-auto", package: "swift-tools-support-core"),
+            ]),
         .testTarget(
             name: "lswiftTests",
             dependencies: ["lswift"]),
