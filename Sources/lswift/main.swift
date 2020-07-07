@@ -20,14 +20,89 @@ class Executor {
         let shouldShowDotFiles = args.get(self.shouldShowDodFiles) ?? false
         
         do {
-            let fileURLs = try fileManager.contentsOfDirectory(atPath: currentPath)
-//            print(fileURLs)
-            let output = fileURLs.filter { shouldShowDotFiles ? true : $0.prefix(1) != "." }.reduce("") { (res, add) in
-                res + "\t\(add)"
+            var options: FileManager.DirectoryEnumerationOptions = []
+            if !shouldShowDotFiles {
+                options.insert(.skipsHiddenFiles)
             }
-            print(output.dropFirst())
+            let fileURLs = try fileManager.contentsOfDirectory(at: URL(string: fileManager.currentDirectoryPath)!,
+                                                               includingPropertiesForKeys: nil,
+                                                               options: options)
+            let models = fileURLs.map { FileModel(URL: $0) }
+            let valList = models.map { $0.makeOutputVal() }
+            
+            let builder = OutputStringBuilder()
+            valList.forEach { builder.set(val: $0) }
+
+            let output = builder.build()
+            print(output)
         } catch {
             print("Error while enumerating files \(currentPath): \(error.localizedDescription)")
+        }
+    }
+    
+}
+
+struct FileModel {
+    enum `Type` {
+        case file
+        case dir
+        
+        func ASCIIColor() -> ASCIIColor {
+            switch self {
+            case .dir:
+                return .green
+            case .file:
+                return .none
+            }
+        }
+    }
+    let URL: Foundation.URL
+    let type: Type
+    
+    init(URL: Foundation.URL) {
+        self.URL = URL
+        type = URL.hasDirectoryPath ? .dir : .file
+    }
+    
+    func makeOutputVal() -> OutputVal {
+        return OutputVal(string: URL.lastPathComponent, color: type.ASCIIColor())
+    }
+}
+
+class OutputStringBuilder {
+    private var outputValList: [OutputVal] = []
+    
+    func set(val: OutputVal) {
+        outputValList.append(val)
+    }
+    
+    func build() -> String {
+        return String(outputValList.reduce("") { (res, add) in
+            if add.color == .none { return res + "\t\(add.string)"}
+            let tab = "\t"
+            let color = add.color.rawValue
+            let clearColor = "\u{001B}[m"
+            return res + tab + color + add.string + clearColor
+        }.dropFirst())
+    }
+}
+
+struct OutputVal {
+    let string: String
+    let color: ASCIIColor
+}
+enum ASCIIColor: String {
+    case none = ""
+    case red = "\u{001B}[0;31m"
+    case green = "\u{001B}[0;32m"
+    case yellow = "\u{001B}[0;33m"
+    
+    func name() -> String {
+        switch self {
+        case .none: return ""
+        case .red: return "Red"
+        case .green: return "Green"
+        case .yellow: return "Yellow"
         }
     }
 }
