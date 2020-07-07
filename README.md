@@ -1,3 +1,2 @@
 # lswift
-
-A description of this package.
+lswift is the ls command implemented by swift
