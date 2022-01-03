@@ -12,7 +12,7 @@ let package = Package(
         .executable(name: "lswift", targets: ["lswift"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-tools-support-core.git", .branch("master")),
+        .package(url: "https://github.com/apple/swift-tools-support-core.git", .upToNextMajor(from: "0.2.4")),
     ],
     targets: [
         .target(
